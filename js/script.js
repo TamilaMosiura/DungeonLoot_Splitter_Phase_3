@@ -1,7 +1,3 @@
-// app state
-const lootItems = [];
-let currentPartySize = 0;
-
 // DOM element refs
 const partySizeInput = document.getElementById("party-size");
 const lootNameInput = document.getElementById("loot-name");
@@ -21,25 +17,51 @@ const partyErrorEl = document.getElementById("party-error");
 const partyConfirmEl = document.getElementById("party-confirm");
 const lootErrorEl = document.getElementById("loot-error");
 
+initialize();
+
+function initialize() {
+  const state = getState();
+  partySizeInput.value = state.partySize > 0 ? state.partySize : "";
+  updateUI();
+}
+
+function getState() {
+  const state = localStorage.getItem("state");
+  return state ? JSON.parse(state) : { lootItems: [], partySize: 0 };
+}
+
+function setState({ loot, partySize }) {
+  const state = getState();
+  if (loot !== undefined) {
+    state.lootItems = loot;
+  }
+  if (partySize !== undefined) {
+    state.partySize = partySize;
+  }
+  localStorage.setItem("state", JSON.stringify(state));
+}
+
 // centralized update function
 function updateUI() {
+  const state = getState();
   const {
     newPartySize,
-  } = validatePartySize(partySizeInput);
-  currentPartySize = newPartySize;
+  } = validatePartySize(partySizeInput, state.partySize);
 
-  renderLootList();
+  setState({ partySize: newPartySize });
+
+  renderLootList(state);
 
   // calculate total loot
   let totalLoot = 0;
-  for (let i = 0; i < lootItems.length; i++) {
-    totalLoot += lootItems[i].value * lootItems[i].quantity;
+  for (let i = 0; i < state.lootItems.length; i++) {
+    totalLoot += state.lootItems[i].value * state.lootItems[i].quantity;
   }
   totalLootEl.textContent = totalLoot.toFixed(2);
 
   // calculate loot per party member and update results
-  if (lootItems.length > 0 && currentPartySize > 0) {
-    const perMember = totalLoot / currentPartySize;
+  if (state.lootItems.length > 0 && state.partySize > 0) {
+    const perMember = totalLoot / state.partySize;
     finalTotalEl.textContent = "$" + totalLoot.toFixed(2);
     perMemberEl.textContent = "$" + perMember.toFixed(2);
     resultsArea.className = "results-area";
@@ -48,11 +70,11 @@ function updateUI() {
   }
 }
 
-function renderLootList() {
+function renderLootList(state) {
   lootRows.innerHTML = "";
 
   // if empty, nothing to render
-  if (lootItems.length === 0) {
+  if (state.lootItems.length === 0) {
     noLootMessage.classList.remove("hidden");
     lootTable.classList.add("hidden");
     totalRowEl.classList.add("hidden");
@@ -64,60 +86,63 @@ function renderLootList() {
   totalRowEl.classList.remove("hidden");
 
   // Loop to render each loot item as a grid row
-  for (let i = 0; i < lootItems.length; i++) {
-    const rowItem = createLootRow(lootItems[i], i);
+  for (let i = 0; i < state.lootItems.length; i++) {
+    const rowItem = createLootRow(state.lootItems[i], i);
     lootRows.appendChild(rowItem);
   }
 }
 
 function createLootRow(item, index) {
-    const row = document.createElement("div");
-    row.className = "loot-row";
+  const row = document.createElement("div");
+  row.className = "loot-row";
 
-    const nameCell = document.createElement("div");
-    nameCell.className = "loot-cell";
-    nameCell.innerText = item.name;
+  const nameCell = document.createElement("div");
+  nameCell.className = "loot-cell";
+  nameCell.innerText = item.name;
 
-    const valueCell = document.createElement("div");
-    valueCell.className = "loot-cell";
-    valueCell.innerText = item.value.toFixed(2);
+  const valueCell = document.createElement("div");
+  valueCell.className = "loot-cell";
+  valueCell.innerText = item.value.toFixed(2);
 
-    const quantityCell = document.createElement("div");
-    quantityCell.className = "loot-cell";
-    quantityCell.innerText = item.quantity;
+  const quantityCell = document.createElement("div");
+  quantityCell.className = "loot-cell";
+  quantityCell.innerText = item.quantity;
 
-    const actionCell = document.createElement("div");
-    actionCell.className = "loot-cell loot-actions";
+  const actionCell = document.createElement("div");
+  actionCell.className = "loot-cell loot-actions";
 
-    const removeBtn = document.createElement("button");
-    removeBtn.innerText = "Remove";
-    removeBtn.addEventListener("click", ()=>removeLoot(index));
+  const removeBtn = document.createElement("button");
+  removeBtn.innerText = "Remove";
+  removeBtn.addEventListener("click", () => removeLoot(index));
 
-    actionCell.appendChild(removeBtn);
+  actionCell.appendChild(removeBtn);
 
-    row.appendChild(nameCell);
-    row.appendChild(valueCell);
-    row.appendChild(quantityCell);
-    row.appendChild(actionCell);
+  row.appendChild(nameCell);
+  row.appendChild(valueCell);
+  row.appendChild(quantityCell);
+  row.appendChild(actionCell);
 
-    return row;
+  return row;
 }
 
-function validatePartySize(input) {
+function validatePartySize(input, statePartySize) {
   partyErrorEl.textContent = "";
   partyConfirmEl.textContent = "";
 
-  let newPartySize = parseInt(input.value, 10);
+  let inputPartySize = parseInt(input.value, 10);
 
-  if (input.value === "" || isNaN(newPartySize)) {
+  let partySizeToSet = statePartySize;
+
+  if (input.value === "" || isNaN(inputPartySize)) {
     partyErrorEl.textContent = "Party size must be a number.";
-    newPartySize = 0;
-  } else if (newPartySize < 1) {
+  } else if (inputPartySize < 1) {
     partyErrorEl.textContent = "Party size must be at least 1.";
   } else {
-    partyConfirmEl.textContent = "Party size set to " + newPartySize + " member" + (newPartySize === 1 ? "!" : "s!");
+    partyConfirmEl.textContent = "Party size set to " + inputPartySize + " member" + (inputPartySize === 1 ? "!" : "s!");
+    partySizeToSet = inputPartySize;
   }
-  return { newPartySize };
+
+  return { newPartySize: partySizeToSet };
 }
 
 // Add loot — validates input, mutates state, then calls updateUI
@@ -131,7 +156,10 @@ function addLoot() {
     return;
   }
 
+  const state = getState();
+  const lootItems = state.lootItems;
   lootItems.push({ name, value, quantity });
+  setState({ loot: lootItems });
 
   // state changed
   updateUI();
@@ -181,7 +209,10 @@ function validateNewLoot() {
 }
 
 function removeLoot(index) {
+  const state = getState();
+  const lootItems = state.lootItems;
   lootItems.splice(index, 1);
+  setState({ loot: lootItems });
   updateUI();
 }
 
