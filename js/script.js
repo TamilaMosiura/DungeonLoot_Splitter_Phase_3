@@ -16,6 +16,7 @@ const resultsArea = document.getElementById("results-area");
 const partyErrorEl = document.getElementById("party-error");
 const partyConfirmEl = document.getElementById("party-confirm");
 const lootErrorEl = document.getElementById("loot-error");
+const resetBtn = document.getElementById("reset");
 
 initialize();
 
@@ -39,6 +40,10 @@ function setState({ loot, partySize }) {
     state.partySize = partySize;
   }
   localStorage.setItem("state", JSON.stringify(state));
+}
+
+function resetState() {
+  localStorage.removeItem("state");
 }
 
 // centralized update function
@@ -220,8 +225,17 @@ function splitLoot() {
   updateUI();
 }
 
+function reset() {
+  resetState();
+  partySizeInput.value = "";
+  updateUI();
+}
+
 // add loot button
 addLootBtn.addEventListener("click", addLoot);
+
+// reset button
+resetBtn.addEventListener("click", reset);
 
 // party size input
 partySizeInput.addEventListener("input", updateUI);

@@ -131,6 +131,16 @@ button:disabled:hover {
   background-color: #e00007;
 }
 
+#reset {
+  background-color: #484848;
+  color: #ffffff;
+  width: 100%;
+}
+
+#reset:hover {
+  background-color: #222222;
+}
+
 #split-loot-btn {
   background-color: #00a699;
   color: #ffffff;

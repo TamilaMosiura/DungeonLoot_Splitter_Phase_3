@@ -62,45 +62,15 @@
       </div>
     </section>
 
+    <section class="panel explanation"> 
+      <button id="reset">Reset Application</button>
+    </section>
+
     <section class="panel explanation">
       <h2>Logic Explanation</h2>
       <p>Quick logic chart to show what happens in each step of the application.</p>
       <img src="./images/logic.png" alt="logic">
-
-      <!-- Source of Truth -->
-      <p>
-        <strong>The loot array</strong>
-        The <code>lootItems</code> array is used as a single source of truth. I placed each item in the array and use it in each <code>updateUI</code> function
-        It contained all items with name/quantity/price and allows to manage the items in one place.
-        By manage I mean add/remove.
-        This approach allows to quickly calculate totals and render the list of items.
-      </p>
-
-      <!-- Quantity -->
-      <p>
-        <strong>Why quantity was added</strong>
-        In Phase 1 assessment I added only name and price. While in this one we added quantity. With this new parameter calculation are made a bit different. 
-      </p>
-
-      <!-- updateUI -->
-      <p>
-        <strong>Where updateUI() performs</strong>
-        The <code>updateUI()</code> function is the function that is used everywhere and after each user action.
-        This allows to control calculations and renders in one place and not repeat code in other places.
-      </p>
-
-      <!-- State Controls Visibility -->
-      <p>
-        <strong>How state controls</strong>
-        The state allows to manage visibility of some compoennts and affect them thru functions or logic. In our case with states were able to show/hide messages.
-      </p>
-
-      <!-- Conditional Logic Prevents Invalid State -->
-      <p>
-        <strong>Where conditional logic prevents invalid state</strong>
-        Every user action goes through validation before any calculations happen. With this approach it is possible to avoid fails and invalid states. Also, it prevens devition to 0 or other invalid cases.
     </section>
-
   </main>
 
   <script src="js/script.js"></script>
